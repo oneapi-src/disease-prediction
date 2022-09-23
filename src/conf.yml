@@ -1,0 +1,17 @@
+# conf.yaml
+version: 1.0
+
+device: cpu
+
+model: 
+        name: disease_pred
+        framework: pytorch
+
+quantization:
+        approach: post_training_dynamic_quant
+
+tuning:
+        accuracy_criterion:
+                relative: 0.01
+        exit_policy:
+                timeout: 0

@@ -1,0 +1,13 @@
+name: stock
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.8
+  - pip
+  - pandas==1.4.4
+  - scikit-learn==1.1.2
+  - pytorch::pytorch=1.11
+  - cpuonly
+  - pip:
+    - transformers==4.21.3
