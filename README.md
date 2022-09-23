@@ -14,11 +14,11 @@
 
  NLP has been used as a tool by healthcare providers for some time but NLP investment by healthcare payers is increasing rapidly. With the development of new techniques in NLP via Deep Learning, significant interest has been drawn by healthcare payers to the task of building AI systems capable of sifting through complex notes and documents within an EHR to assess patient state.  
 
- In this reference kit, we demonstrate one possible reference implementation of a Deep Learning based NLP pipeline which aims to train a document classifier that takes in notes about a patients symptoms and predicts the prognosis among a set of known diseases.  This is further accelerated by Intel® OneAPI to speed up training, enabling healthcare payers to increase risk assessment accuracy and run training more frequently to incorporate constantly changing data, in addition to process the massive datasets more efficiently on Intel® hardware.
+ In this reference kit, we demonstrate one possible reference implementation of a Deep Learning based NLP pipeline which aims to train a document classifier that takes in notes about a patients symptoms and predicts the diagnosis among a set of known diseases.  This is further accelerated by Intel® OneAPI to speed up training, enabling healthcare payers to increase risk assessment accuracy and run training more frequently to incorporate constantly changing data, in addition to process the massive datasets more efficiently on Intel® hardware.
  
 ## Reference Solution
 
-The implementation for our AI-based NLP Disease Prediction system is based around fine-tuning and using a ClinicalBERT-based document classifier.  The pipeline ingests text statements/documents and outputs the probability of prognosis for a known set of diseases.
+The implementation for our AI-based NLP Disease Prediction system is based around fine-tuning and using a ClinicalBERT-based document classifier.  The pipeline ingests text statements/documents and outputs the probability of diagnoses for a known set of diseases.
 
 > Patient Document/Notes => **Classify Document to Predicted Disease** => Measured Patient Level Risk
 
@@ -49,11 +49,11 @@ The reference kit implementation is a reference solution to the described use ca
 
 ### Dataset
 
-The dataset used for this demo is a synthetic symptom and prognosis dataset obtained from https://www.kaggle.com/kaushil268/disease-prediction-using-machine-learning.  In this dataset, each row corresponds to a list of symptom names and the corresponding prognosis for that particular set of syptoms.  The original dataset consists of indicators for the symptom names however for our purposes, we first transform the data from indicators to string descriptions to emulate a situation where the symptoms come in the form of text.  An example row would be 
+The dataset used for this demo is a synthetic symptom and diagnosis dataset obtained from https://www.kaggle.com/kaushil268/disease-prediction-using-machine-learning.  In this dataset, each row corresponds to a list of symptom names and the corresponding diagnosis for that particular set of syptoms.  The original dataset consists of indicators for the symptom names however for our purposes, we first transform the data from indicators to string descriptions to emulate a situation where the symptoms come in the form of text.  An example row would be 
 
 
 > symptoms: itching, dischromic patches, nodal skin eruptions, skin rash
-> prognosis: fungal infection
+> diagnoses: fungal infection
 
 Furthermore, to add a bit of natural language variation, each list of symptoms is padded with a few random phrases to imitate the possible situation of noise and a few negative phrases as well.  For example, a possible variation of above list of symptoms could be.
 
@@ -72,6 +72,7 @@ Using the patient symptom descriptions and diagnoses, we train a fine-tuned Clin
 Details about the BERT model can be found at (Devlin 2018)[1].  Details about the ClinicalBERT embeddings can be found at (Alsentzer 2019).
 
 [1] Devlin, Jacob, et al. "Bert: Pre-training of deep bidirectional transformers for language understanding." arXiv preprint arXiv:1810.04805 (2018).
+
 [2] Alsentzer, Emily, et al. "Publicly available clinical BERT embeddings." arXiv preprint arXiv:1904.03323 (2019).
 
 ### Model Inference
@@ -184,7 +185,7 @@ conda activate disease_pred_stock
 python run_inference.py --saved_model_dir ../saved_models/stock --input_file ../data/disease-prediction/Testing.csv --batch_size 20
 ```
 
-which outputs a json string  of the *predicted probabilities Top 5 prognoses for each entry in the input file*.
+which outputs a json string of the *predicted probabilities Top 5 diagnoses for each entry in the input file*, processing at batch size of 20.
 
 ## Optimizing the E2E Reference Solution with Intel® oneAPI
 
@@ -256,7 +257,7 @@ conda activate disease_pred_intel
 python -m intel_extension_for_pytorch.cpu.launch --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --intel
 ```
 
-which outputs a json string of the *predicted probabilities Top 5 prognoses for each entry in the input file*.
+which outputs a json string of the *predicted probabilities Top 5 diagnoses for each entry in the input file*, processing at batch size of 20.
 
 **Note:**
 Intel® Extension for PyTorch* contains many environment specific configuration parameters which can be set using the included CPU launcher tool.  Further details for this can be found at https://intel.github.io/intel-extension-for-pytorch/1.11.200/tutorials/performance_tuning/launch_script.html.  While the above command sets many parameters automatically, it may sometimes be better to set some parameters manually.
@@ -310,21 +311,22 @@ python -m intel_extension_for_pytorch.cpu.launch run_inference.py --saved_model_
 
 In the following, we report some results comparing the Intel® technologies vs the stock alternative on the following 2 primary set of experiments:
 
-### ***1. Batch Inference with Intel® Extension for PyTorch\* + Intel® Neural Compressor***
-
-Often, information describing a single patient can span several text documents with multiple sections and pages.  In these situations, to obtain a holistic view of patient state and to make accurate assessments of patient risk, it may be necessary to process and predict the prognosis from each of these individual sections.  Furthermore, as customer data is changing continuously as new patients records are generated every day, it is often necessary to update patient information and predictions as efficiently as possible.  In these scenarios, batching different documents in order to make predictions on all documents as fast as possible is preferable to get through the workload as efficiently as possible.  
-
-We conduct benchmarks on batch inference using Intel® Extension for PyTorch*/Intel® Neural Compressor with batch size 20/30 and sequence lengths of 512 to account for long documents.  
-
-### ***2. Realtime Inference with Intel® Extension for PyTorch\* + Intel® Neural Compressor***
+### ***1. Realtime Inference with Intel® Extension for PyTorch\* + Intel® Neural Compressor***
 
 In many situations, a fast assessment on a single patient record is necessary to build an fast understanding of a patients risk from something like a doctors note or a visit summary.  In these scenarios, realtime latency is an important factor to consider. Furthermore, in a live deployment, healthcare payers are likely to run multiple other models in parallel to determine the risk beyond just the disease prediction one, all whilst maintaining the same resources, for which model compression can help to best utilize the same resource capacity.   
 
 We conduct benchmarks on realtime inference on a single document using Intel® Extension for PyTorch*/Intel® Neural Compressor with sequence lengths of 512 to account for long documents.
 
+### ***2. Batch Inference with Intel® Extension for PyTorch\* + Intel® Neural Compressor***
+
+Often, information describing a single patient can span several text documents with multiple sections and pages.  In these situations, to obtain a holistic view of patient state and to make accurate assessments of patient risk, it may be necessary to process and predict the diagnosis from each of these individual sections.  Furthermore, as customer data is changing continuously as new patients records are generated every day, it is often necessary to update patient information and predictions as efficiently as possible.  In these scenarios, batching different documents in order to make predictions on all documents as fast as possible is preferable to get through the workload as efficiently as possible.  
+
+We conduct benchmarks on batch inference using Intel® Extension for PyTorch*/Intel® Neural Compressor with batch size 20/30 and sequence lengths of 512 to account for long documents.  
+
+
 ### Results Summary
 
-Performance across the models trained using both PyTorch and the Intel® Extension for PyTorch* achieve the same level of accuracy 95% on a hold out test set within 3 training epochs.
+Performance across the models trained using both PyTorch and the Intel® Extension for PyTorch* achieve the same level of accuracy 95% on a hold out test set within 3 training epochs.  Quantization with Intel Neural Compressor results in a -0.01% drop in accuracy.
 
 ![performance_plot](assets/relative_gains.png)
 
