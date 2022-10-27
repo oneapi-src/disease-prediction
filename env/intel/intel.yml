@@ -2,7 +2,7 @@ name: intel
 channels:
   - pytorch
 dependencies:
-  - intel::intelpython3_core
+  - intel::intelpython3_core==2022.1.0
   - python=3.8
   - pip
   - pytorch::pytorch==1.11.0
