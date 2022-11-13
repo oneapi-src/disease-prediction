@@ -89,7 +89,11 @@ def main(flags):
     # if using intel, optimize the model and the optimizer
     if flags.intel:
         import intel_extension_for_pytorch as ipex
-        model, optimizer = ipex.optimize(model, optimizer=optimizer)
+        if flags.bf16:
+            dtype = torch.bfloat16
+        else:
+            dype = None # default dtype for ipex.optimize()
+        model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=dtype)
 
     logger.debug("Training the model...")
     train(
@@ -97,6 +101,7 @@ def main(flags):
         val_loader,
         model,
         optimizer,
+        flags.bf16,
         epochs=flags.epochs,
         max_grad_norm=flags.grad_norm,
     )
@@ -198,6 +203,13 @@ if __name__ == "__main__":
         default="emilyalsentzer/Bio_ClinicalBERT",
         type=str,
         help="Bert base model to fine tune."
+    )
+    
+    parser.add_argument(
+        '--bf16',
+        default=False,
+        action="store_true",
+        help="Enable bf16 training"
     )
 
     FLAGS = parser.parse_args()
