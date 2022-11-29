@@ -134,7 +134,7 @@ def main(flags) -> None:
         if flags.bf16:
             dtype = torch.bfloat16
         else:
-            dype = None # default dtype for ipex.optimize()
+            dtype = None # default dtype for ipex.optimize()
         
         model = ipex.optimize(model, dtype=dtype)
         model = torch.jit.trace(
@@ -179,7 +179,7 @@ def main(flags) -> None:
         logger.info("Running experiment n = %d, b = %d, l = %d",
                     flags.n_runs, flags.batch_size, flags.seq_length)
 
-        average_time = inference(predict, batch, FLAGS.n_runs)
+        average_time = inference(predict, batch, FLAGS)
         logger.info('Avg time per batch : %.3f s', average_time)
     else:
         predictions = []

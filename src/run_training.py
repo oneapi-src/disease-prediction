@@ -92,7 +92,7 @@ def main(flags):
         if flags.bf16:
             dtype = torch.bfloat16
         else:
-            dype = None # default dtype for ipex.optimize()
+            dtype = None # default dtype for ipex.optimize()
         model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=dtype)
 
     logger.debug("Training the model...")
