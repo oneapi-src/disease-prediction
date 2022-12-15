@@ -228,7 +228,7 @@ This script utilizes the dependencies found in the `env/intel/intel.yml` file to
 
 ### Optimized Reference Solution Implementation
 
-An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
+An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. The fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids) provide suppport for AVX512 bf16 instructions to provide additional boost by utilizing Automatic Mixed Precision. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
 
 #### Model Building Process with Intel® Optimizations
 
@@ -254,6 +254,7 @@ cd src
 conda activate disease_pred_intel
 python run_training.py --logfile ../logs/intel.log --save_model_dir ../saved_models/intel --data_dir ../data/disease-prediction --intel --bf16
 ```
+> **_NOTE:_**  Please enable bf16 training only if you are using a platform that supports AVX512 bf16 instructions, they include the third generation Intel® Xeon® Scalable processors (Cooper Lake) and the fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids). AVX512 bf16 instructions are **not** supported by Ice Lake which is also a third generation Intel® Xeon® Scalable processor.
 
 #### Model Inference with Intel® optimizations
 
@@ -278,6 +279,7 @@ cd src
 conda activate disease_pred_intel
 python -m intel_extension_for_pytorch.cpu.launch --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --intel --bf16
 ```
+> **_NOTE:_**  Please enable bf16 inference only if you are using a platform that supports AVX512 bf16 instructions, they include the third generation Intel® Xeon® Scalable processors (Cooper Lake) and the fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids). AVX512 bf16 instructions are **not** supported by Ice Lake which is also a third generation Intel® Xeon® Scalable processor.
 
 **Note:**
 Intel® Extension for PyTorch* contains many environment specific configuration parameters which can be set using the included CPU launcher tool.  Further details for this can be found at https://intel.github.io/intel-extension-for-pytorch/1.11.200/tutorials/performance_tuning/launch_script.html.  While the above command sets many parameters automatically, it may sometimes be better to set some parameters manually.
