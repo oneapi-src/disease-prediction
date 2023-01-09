@@ -228,7 +228,7 @@ This script utilizes the dependencies found in the `env/intel/intel.yml` file to
 
 ### Optimized Reference Solution Implementation
 
-An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. In addition, the fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids) provide suppport for AMX bf16 instructions to provide additional boost by utilizing Automatic Mixed Precision.. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
+An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. The fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids) provide suppport for AMX bf16 instructions to provide additional boost by utilizing Automatic Mixed Precision. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
 
 #### Model Building Process with Intel® Optimizations
 
