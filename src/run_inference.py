@@ -15,6 +15,7 @@ import logging
 import os
 import pathlib
 import time
+from contextlib import nullcontext
 
 import numpy as np
 import torch
@@ -25,7 +26,7 @@ from transformers import BertConfig, BertForSequenceClassification
 from utils.process_data import read_and_preprocess_data, REVERSE_MAPPING
 
 
-def inference(predict_fn, batch, n_runs) -> float:
+def inference(predict_fn, batch, flags) -> float:
     """Run inference using the provided `predict_fn`
 
     Args:
@@ -36,15 +37,19 @@ def inference(predict_fn, batch, n_runs) -> float:
     Returns:
         float : Average prediction time
     """
+    n_runs = flags.n_runs
+    enable_bf16 = flags.bf16
     times = []
     predictions = []
     with torch.no_grad():
-        for _ in range(2 + n_runs):
-            start = time.time()
-            res = predict_fn(batch)
-            end = time.time()
-            predictions.append(res)
-            times.append(end - start)
+        # use mixed precision bf16 inference only if enabled
+        with torch.cpu.amp.autocast() if enable_bf16 else nullcontext():
+            for _ in range(2 + n_runs):
+                start = time.time()
+                res = predict_fn(batch)
+                end = time.time()
+                predictions.append(res)
+                times.append(end - start)
 
     avg_time = np.mean(times[2:])
     return avg_time
@@ -124,7 +129,14 @@ def main(flags) -> None:
         logger.info("Using IPEX to optimize model")
 
         model.eval()
-        model = ipex.optimize(model)
+        
+        # select dtype based on the flag
+        if flags.bf16:
+            dtype = torch.bfloat16
+        else:
+            dtype = None # default dtype for ipex.optimize()
+        
+        model = ipex.optimize(model, dtype=dtype)
         model = torch.jit.trace(
             model,
             jit_inputs,
@@ -158,17 +170,16 @@ def main(flags) -> None:
         Returns:
             torch.Tensor: predicted quantities
         """
-
-        return model(
-            input_ids=batch['input_ids'],
-            attention_mask=batch['attention_mask'],
-        )
+        res = model(
+        input_ids=batch['input_ids'],
+        attention_mask=batch['attention_mask'])
+        return res
 
     if flags.benchmark_mode:
         logger.info("Running experiment n = %d, b = %d, l = %d",
                     flags.n_runs, flags.batch_size, flags.seq_length)
 
-        average_time = inference(predict, batch, FLAGS.n_runs)
+        average_time = inference(predict, batch, FLAGS)
         logger.info('Avg time per batch : %.3f s', average_time)
     else:
         predictions = []
@@ -253,6 +264,13 @@ if __name__ == '__main__':
         default=100,
         help="number of trials to test. defaults to 100.",
         type=int
+    )
+    
+    parser.add_argument(
+        '--bf16',
+        default=False,
+        action="store_true",
+        help="Enable bf16 inference"
     )
 
     FLAGS = parser.parse_args()

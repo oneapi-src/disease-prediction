@@ -228,7 +228,7 @@ This script utilizes the dependencies found in the `env/intel/intel.yml` file to
 
 ### Optimized Reference Solution Implementation
 
-An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
+An optimized implementation of training and inference of PyTorch models which leverages Intel® CPU architectures and instruction sets, such as AVX512, can be built by using Intel® Extension for PyTorch*. The fourth generation Intel® Xeon® Scalable processors (Sapphire Rapids) provide suppport for AMX bf16 instructions to provide additional boost by utilizing Automatic Mixed Precision. Further optimizations for Intel® CPUs can be obtained by using Intel® Neural Compressor to quantize a trained to INT8 format.  This reference kit provides code for the same model building and inference process optimized via these techniques.
 
 #### Model Building Process with Intel® Optimizations
 
@@ -245,6 +245,18 @@ python run_training.py --logfile ../logs/intel.log --save_model_dir ../saved_mod
 ```
 which will output a saved model at `saved_models/intel` and log timing information to `logs/intel.log`.
 
+The `run_training.py` script also includes a command line flag `--bf16` which enables bf16 mixed precision training (on CPUs that support it) along with the optimizations.
+
+The training process for Intel® Extension for PyTorch* along with bf16 mixed precision training can be enabled using the `run_training.py` script as:
+
+> **_NOTE:_**  You can enable bf16 training by setting the bf16 flag as shown below. Please note that this flag MUST be enabled only on Intel® Fourth Gen Xeon® Scalable processors codenamed Sapphire Rapids that has bf16 training support and optimizations to utilize AMX, the latest ISA introduced in this family of processors.
+
+```shell
+cd src
+conda activate disease_pred_intel
+python run_training.py --logfile ../logs/intel.log --save_model_dir ../saved_models/intel --data_dir ../data/disease-prediction --intel --bf16
+```
+
 #### Model Inference with Intel® optimizations
 
 Similar to model training, the `run_inference.py` script includes a command line flag `--intel` which enables the  optimizations for the passed in trained model. In addition, the Intel® Extension for PyTorch* launch script can be used to automatically configure Intel® OpenMP for your hardware.
@@ -258,6 +270,18 @@ python -m intel_extension_for_pytorch.cpu.launch --disable_numactl run_inference
 ```
 
 which outputs a json string of the *predicted probabilities Top 5 diagnoses for each entry in the input file*, processing at batch size of 20.
+
+Additionaly, to enable optimization using bf16 mixed precision to the above mentioned inference workflow, the script also includes a command line flag `--bf16`
+
+The inference process with Intel® Extension for PyTorch*, bf16 mixed precision and Intel OpenMP enabled can be run using the `run_inference.py` script as follows:
+
+> **_NOTE:_**  You can enable bf16 inference by setting the bf16 flag as shown below. Please note that this flag MUST be enabled only on Intel® Fourth Gen Xeon® Scalable processors codenamed Sapphire Rapids that has bf16 training support and optimizations to utilize AMX, the latest ISA introduced in this family of processors.
+
+```shell
+cd src
+conda activate disease_pred_intel
+python -m intel_extension_for_pytorch.cpu.launch --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --intel --bf16
+```
 
 **Note:**
 Intel® Extension for PyTorch* contains many environment specific configuration parameters which can be set using the included CPU launcher tool.  Further details for this can be found at https://intel.github.io/intel-extension-for-pytorch/1.11.200/tutorials/performance_tuning/launch_script.html.  While the above command sets many parameters automatically, it may sometimes be better to set some parameters manually.
@@ -419,3 +443,7 @@ To replicate the performance experiments described above, do the following:
     ```bash
     apt install libgl1-mesa-glx
     ```
+2. RuntimeError: UNSUPPORTED DTYPE
+
+    The above RuntimeError occurs when trying to use a quantized INT8 version of the model on Intel® Fourth Gen Xeon® Scalable processor codenamed Sapphire Rapids.
+    This issue is currently being worked on.
