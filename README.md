@@ -14,7 +14,7 @@
 
  NLP has been used as a tool by healthcare providers for some time but NLP investment by healthcare payers is increasing rapidly. With the development of new techniques in NLP via Deep Learning, significant interest has been drawn by healthcare payers to the task of building AI systems capable of sifting through complex notes and documents within an EHR to assess patient state.  
 
- In this reference kit, we demonstrate one possible reference implementation of a Deep Learning based NLP pipeline which aims to train a document classifier that takes in notes about a patients symptoms and predicts the diagnosis among a set of known diseases.  This is further accelerated by Intel® OneAPI to speed up training, enabling healthcare payers to increase risk assessment accuracy and run training more frequently to incorporate constantly changing data, in addition to process the massive datasets more efficiently on Intel® hardware.
+ In this reference kit, we demonstrate one possible reference implementation of a Deep Learning based NLP pipeline which aims to train a document classifier that takes in notes about a patients symptoms and predicts the diagnosis among a set of known diseases.  This is further accelerated by Intel® oneAPI to speed up training, enabling healthcare payers to increase risk assessment accuracy and run training more frequently to incorporate constantly changing data, in addition to process the massive datasets more efficiently on Intel® hardware.
  
 ## Reference Solution
 
