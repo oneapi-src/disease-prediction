@@ -8,7 +8,7 @@ dependencies:
   - pytorch::pytorch==1.11.0
   - cpuonly
   - conda-forge::scikit-learn==0.24.2
-  - neural-compressor==1.12
+  - neural-compressor==2.1
   - pip:
     - intel_extension_for_pytorch==1.11
     - psutil==5.9.2

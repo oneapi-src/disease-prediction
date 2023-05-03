@@ -15,7 +15,8 @@ import os
 import logging
 import shutil
 
-from neural_compressor.experimental import Quantization, common
+from neural_compressor import PostTrainingQuantConfig, set_workspace
+from neural_compressor import quantization
 from sklearn.metrics import accuracy_score
 import torch
 from transformers import AutoTokenizer
@@ -49,13 +50,13 @@ class INCDataset:
         return self.n_elements
 
 
-def quantize_model(model, test_loader, inc_config_file):
+def quantize_model(model, test_loader, flags):
     """Quantizes the model using the given dataset and INC config
 
     Args:
         model : PyTorch model to quantize.
         test_loader : Dataset to use for quantization.
-        inc_config_file : Path to INC config.
+        flags: benchmarking flags
     """
 
     def evaluate_accuracy(model_q) -> float:
@@ -76,16 +77,18 @@ def quantize_model(model, test_loader, inc_config_file):
 
         return accuracy_score(test_preds, test_labels)
 
-    # quantize model using provided configuration
-    quantizer = Quantization(inc_config_file)
-    cmodel = common.Model(model)
-    quantizer.model = cmodel
-    quantizer.calib_dataloader = test_loader
-    quantizer.eval_func = evaluate_accuracy
-    quantized_model = quantizer()
+
+    conf = PostTrainingQuantConfig()
+    
+    # saved intermediate files in ./saved folder
+    set_workspace(flags.output_dir)
+
+    quantized_model = quantization.fit(model,
+                           conf,
+                           calib_dataloader=test_loader,
+                           eval_func=evaluate_accuracy)
 
     return quantized_model
-
 
 def main(flags) -> None:
     """Calibrate model for int 8 and serialize as a .pt
@@ -100,10 +103,6 @@ def main(flags) -> None:
 
     if not os.path.exists(flags.saved_model_dir):
         logger.error("Saved model %s not found!", flags.saved_model_dir)
-        return
-
-    if not os.path.exists(flags.inc_config_file):
-        logger.error("INC configuration %s not found!", flags.inc_config_file)
         return
 
     tokenizer = AutoTokenizer.from_pretrained(flags.saved_model_dir)
@@ -127,7 +126,7 @@ def main(flags) -> None:
         flags.saved_model_dir
     )
 
-    quantized_model = quantize_model(model, test_loader, flags.inc_config_file)
+    quantized_model = quantize_model(model, test_loader, flags)
     quantized_model.save(flags.output_dir)
 
     # Rename files to better match the saved transformer model format
@@ -177,12 +176,6 @@ if __name__ == '__main__':
         default=512,
         help="sequence length to use",
         type=int
-    )
-
-    parser.add_argument(
-        '--inc_config_file',
-        help="INC conf yaml",
-        required=True
     )
 
     FLAGS = parser.parse_args()

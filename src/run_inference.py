@@ -136,17 +136,21 @@ def main(flags) -> None:
         else:
             dtype = None # default dtype for ipex.optimize()
         
-        model = ipex.optimize(model, dtype=dtype)
-        model = torch.jit.trace(
-            model,
-            jit_inputs,
-            check_trace=False,
-            strict=False
-        )
-        model = torch.jit.freeze(model)
+        with torch.no_grad(), torch.cpu.amp.autocast() if flags.bf16 else nullcontext():
+            model = ipex.optimize(model, dtype=dtype)
+            model = torch.jit.trace(
+                model,
+                jit_inputs,
+                check_trace=False,
+                strict=False
+            )
+            model = torch.jit.freeze(model)
+    
     else:
-
-        logger.info("Using stock model")
+        if flags.is_inc_int8:
+            logger.info("Using INC Quantized model")
+        else:    
+            logger.info("Using stock model")
 
         model.eval()
         model = torch.jit.trace(

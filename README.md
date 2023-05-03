@@ -295,7 +295,7 @@ Intel® Neural Compressor offers multiple algorithms and packages for quantizing
 The `run_quantize_inc.py` script takes the following arguments:
 
 ```shell
-usage: run_quantize_inc.py [-h] --input_file INPUT_FILE [--batch_size BATCH_SIZE] --saved_model_dir SAVED_MODEL_DIR --output_dir OUTPUT_DIR [--seq_length SEQ_LENGTH] --inc_config_file INC_CONFIG_FILE
+usage: run_quantize_inc.py [-h] --input_file INPUT_FILE [--batch_size BATCH_SIZE] --saved_model_dir SAVED_MODEL_DIR --output_dir OUTPUT_DIR [--seq_length SEQ_LENGTH] 
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -309,8 +309,6 @@ optional arguments:
                         directory to save quantized model to.
   --seq_length SEQ_LENGTH
                         sequence length to use.
-  --inc_config_file INC_CONFIG_FILE
-                        INC conf yaml.
 
 ```
 
@@ -329,7 +327,7 @@ Inference on this newly quantized model can be performed using the `run_inferenc
 ```shell
 cd src
 conda activate disease_pred_intel
-python -m intel_extension_for_pytorch.cpu.launch run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --intel --is_inc_int8
+python -m intel_extension_for_pytorch.cpu.launch run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --is_inc_int8
 ```
 ## Performance Observations
 
@@ -425,9 +423,9 @@ To replicate the performance experiments described above, do the following:
     python run_quantize_inc.py --saved_model_dir ../saved_models/intel --output_dir ../saved_models/intel_inc_int8/ --inc_config_file conf.yml --input_file ../data/disease-prediction/Training.csv
 
     # Run inference on different batch sizes using quantized model
-    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 1 --benchmark_mode --n_runs 1000 --logfile ../logs/intel.log --intel --is_inc_int8
-    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --benchmark_mode --n_runs 100 --logfile ../logs/intel.log --intel --is_inc_int8
-    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 30 --benchmark_mode --n_runs 100 --logfile ../logs/intel.log --intel --is_inc_int8
+    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 1 --benchmark_mode --n_runs 1000 --logfile ../logs/intel.log --is_inc_int8
+    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 20 --benchmark_mode --n_runs 100 --logfile ../logs/intel.log --is_inc_int8
+    python -m intel_extension_for_pytorch.cpu.launch --use_default_allocator --disable_numactl run_inference.py --saved_model_dir ../saved_models/intel_inc_int8 --input_file ../data/disease-prediction/Testing.csv --batch_size 30 --benchmark_mode --n_runs 100 --logfile ../logs/intel.log --is_inc_int8
     ```
 
 ### Known Issues
@@ -443,7 +441,4 @@ To replicate the performance experiments described above, do the following:
     ```bash
     apt install libgl1-mesa-glx
     ```
-2. RuntimeError: UNSUPPORTED DTYPE
 
-    The above RuntimeError occurs when trying to use a quantized INT8 version of the model on Intel® Fourth Gen Xeon® Scalable processor codenamed Sapphire Rapids.
-    This issue is currently being worked on.
